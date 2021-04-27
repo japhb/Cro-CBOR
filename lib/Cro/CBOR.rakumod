@@ -1,4 +1,128 @@
-unit class Cro::CBOR:auth<zef:japhb>:api<0>:ver<0.0.1>;
+unit module Cro::CBOR:auth<zef:japhb>:api<0>:ver<0.0.1>;
+
+
+use Cro::BodyParser;
+use Cro::HTTP::Message;
+use Cro::HTTP::BodySerializers;
+use Cro::HTTP::BodyParserSelectors;
+use Cro::HTTP::BodySerializerSelectors;
+use Cro::WebSocket::Message::Opcode;
+
+use CBOR::Simple;
+
+
+# XXXX: Additional mime-type entry:
+#       'cbor' => 'application/cbor',
+
+
+### HTTP PARSER AND SERIALIZER
+
+class HTTP::BodyParser does Cro::BodyParser {
+    method is-applicable(Cro::HTTP::Message $message --> Bool) {
+        with $message.content-type {
+            .type eq 'application' && .subtype eq 'cbor' || .suffix eq 'cbor'
+        }
+        else {
+            False
+        }
+    }
+
+    method parse(Cro::HTTP::Message $message --> Promise) {
+        Promise(supply {
+            my $payload = Blob.new;
+            whenever $message.body-byte-stream -> $blob {
+                $payload ~= $blob;
+                LAST emit cbor-decode($payload);
+            }
+        })
+    }
+}
+
+
+class HTTP::BodySerializer does Cro::HTTP::BodySerializer {
+    method is-applicable(Cro::HTTP::Message $message, $body --> Bool) {
+        with $message.content-type {
+            .type eq 'application' && .subtype eq 'cbor' || .suffix eq 'cbor'
+        }
+        else {
+            False
+        }
+    }
+
+    method serialize(Cro::HTTP::Message $message, $body --> Supply) {
+        my $cbor = cbor-encode($body);
+        self!set-content-length($message, $cbor.bytes);
+        supply { emit $cbor }
+    }
+}
+
+
+### WEBSOCKET PARSER AND SERIALIZER
+
+class WebSocket::BodyParser does Cro::BodyParser {
+    method is-applicable($message) {
+        # We presume that if this body parser has been installed, then we will
+        # always be doing CBOR
+        True
+    }
+
+    method parse($message) {
+        $message.body-blob.then: -> $blob-promise {
+            cbor-decode($blob-promise.result)
+        }
+    }
+}
+
+
+class WebSocket::BodySerializer does Cro::BodySerializer {
+    method is-applicable($message, $body) {
+        # We presume that if this body serializer has been installed, then we
+        # will always be doing CBOR
+        True
+    }
+
+    method serialize($message, $body) {
+        $message.opcode = Binary;
+        supply emit cbor-encode($body)
+    }
+}
+
+
+### HTTP PARSER AND SERIALIZER SELECTORS
+
+class HTTP::BodyParserSelector::Request
+   is Cro::HTTP::BodyParserSelector::RequestDefault {
+    method select(Cro::HTTP::Message $message --> Cro::BodyParser) {
+        return HTTP::BodyParser if HTTP::BodyParser.is-applicable($message);
+        callsame;
+    }
+}
+
+
+class HTTP::BodyParserSelector::Response
+   is Cro::HTTP::BodyParserSelector::ResponseDefault {
+    method select(Cro::HTTP::Message $message --> Cro::BodyParser) {
+        return HTTP::BodyParser if HTTP::BodyParser.is-applicable($message);
+        callsame;
+    }
+}
+
+class HTTP::BodySerializerSelector::Request
+   is Cro::HTTP::BodySerializerSelector::RequestDefault {
+    method select(Cro::HTTP::Message $message, $body --> Cro::HTTP::BodySerializer) {
+        return HTTP::BodySerializer if HTTP::BodySerializer.is-applicable($message, $body);
+        callsame;
+    }
+}
+
+class HTTP::BodySerializerSelector::Response
+   is Cro::HTTP::BodySerializerSelector::ResponseDefault {
+    method select(Cro::HTTP::Message $message, $body --> Cro::HTTP::BodySerializer) {
+        return HTTP::BodySerializer if HTTP::BodySerializer.is-applicable($message, $body);
+        callsame;
+    }
+}
+
 
 
 =begin pod
