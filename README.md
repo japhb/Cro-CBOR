@@ -1,7 +1,7 @@
 NAME
 ====
 
-Cro::CBOR - blah blah blah
+Cro::CBOR - Support CBOR in Cro for body parsing/serializing
 
 SYNOPSIS
 ========
@@ -13,7 +13,7 @@ use Cro::CBOR;
 DESCRIPTION
 ===========
 
-Cro::CBOR is ...
+Cro::CBOR is a set of extensions to `Cro::HTTP` and `Cro::WebSocket` to support using CBOR alongside JSON as a standard body serialization format.
 
 AUTHOR
 ======

@@ -1,4 +1,5 @@
 {
+  "auth": "zef:japhb",
   "authors": [
     "Geoffrey Broadwell"
   ],
@@ -7,7 +8,7 @@
   "depends": [
     "CBOR::Simple"
   ],
-  "description": "blah blah blah",
+  "description": "Support CBOR in Cro for body parsing/serializing",
   "license": "Artistic-2.0",
   "name": "Cro::CBOR",
   "perl": "6.d",
