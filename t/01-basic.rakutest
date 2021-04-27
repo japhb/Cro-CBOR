@@ -1,6 +1,0 @@
-use Test;
-use Cro::CBOR;
-
-pass "replace me";
-
-done-testing;
