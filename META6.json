@@ -5,6 +5,7 @@
   "build-depends": [
   ],
   "depends": [
+    "CBOR::Simple"
   ],
   "description": "blah blah blah",
   "license": "Artistic-2.0",
