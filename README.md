@@ -1,3 +1,5 @@
+[![Actions Status](https://github.com/japhb/Cro-CBOR/workflows/test/badge.svg)](https://github.com/japhb/Cro-CBOR/actions)
+
 NAME
 ====
 
