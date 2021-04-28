@@ -2,6 +2,7 @@ unit module Cro::CBOR:auth<zef:japhb>:api<0>:ver<0.0.1>;
 
 
 use Cro::BodyParser;
+use Cro::HTTP::MimeTypes;
 use Cro::HTTP::Message;
 use Cro::HTTP::BodySerializers;
 use Cro::HTTP::BodyParserSelectors;
@@ -13,8 +14,8 @@ use Cro::WebSocket::Client;
 use CBOR::Simple;
 
 
-# XXXX: Additional mime-type entry:
-#       'cbor' => 'application/cbor',
+# Make sure the CBOR MIME type is registered;
+%mime<cbor> = 'application/cbor';
 
 
 ### HTTP PARSER AND SERIALIZER
