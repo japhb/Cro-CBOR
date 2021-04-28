@@ -6,6 +6,7 @@ use Cro::HTTP::Message;
 use Cro::HTTP::BodySerializers;
 use Cro::HTTP::BodyParserSelectors;
 use Cro::HTTP::BodySerializerSelectors;
+use Cro::HTTP::Router::WebSocket;
 use Cro::WebSocket::Message::Opcode;
 use Cro::WebSocket::Client;
 
@@ -136,8 +137,8 @@ multi web-socket(&handler, :$cbor!) is export {
 ### WEBSOCKET CLIENT
 
 class WebSocket::Client is Cro::WebSocket::Client {
-    multi new(:$cbor!, :$uri, :@headers) {
-        callwith(:$uri, :@headers, :body-parsers(WebSocket::BodyParser),
+    multi method new(:$cbor!, :$uri, :@headers) {
+        self.new(:$uri, :@headers, :body-parsers(WebSocket::BodyParser),
                                    :body-serializers(WebSocket::BodySerializer))
     }
 }
