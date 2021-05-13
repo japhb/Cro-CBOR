@@ -1,0 +1,93 @@
+use Test;
+
+use CBOR::Simple;
+use Cro::HTTP::Router;
+use Cro::HTTP::Server;
+
+use Cro::CBOR;
+
+plan 14;
+
+
+### BELOW TESTS ADAPTED NEARLY VERBATIM FROM THE JSON TESTS FOR CRO::WebSocket
+
+
+constant %ca := { ca-file => 't/certs-and-keys/ca-crt.pem' };
+constant %key-cert := {
+    private-key-file => 't/certs-and-keys/server-key.pem',
+    certificate-file => 't/certs-and-keys/server-crt.pem'
+};
+
+my $app = route {
+    get -> 'cbor' {
+        web-socket -> $incoming {
+            supply whenever $incoming {
+                my $cbor = cbor-decode await .body;
+                $cbor<added> = 42;
+                $cbor<updated>++;
+                emit cbor-encode $cbor;
+            }
+        }
+    }
+}
+
+my $http-server = Cro::HTTP::Server.new(port => 3005, application => $app);
+my $https-server = Cro::HTTP::Server.new(port => 3007, application => $app, tls => %key-cert);
+$http-server.start;
+$https-server.start;
+END { $http-server.stop };
+END { $https-server.stop }
+
+
+# Body parsers/serializers
+{
+    my $client = Cro::WebSocket::Client.new:
+        body-parsers => Cro::CBOR::WebSocket::BodyParser,
+        body-serializers => Cro::CBOR::WebSocket::BodySerializer;
+    my $connection = await $client.connect: 'http://localhost:3005/cbor';
+    my $response = $connection.messages.head.Promise;
+    lives-ok { $connection.send({ kept => 'xxx', updated => 99 }) },
+        'Can send Hash using client with CBOR body serializer installed';
+    given await $response {
+        my $body = await .body;
+        ok $body.isa(Hash), 'Got hash back from body, thanks to CBOR body parser';
+        is $body<kept>, 'xxx', 'Correct hash content (1)';
+        is $body<added>, 42, 'Correct hash content (2)';
+        is $body<updated>, 100, 'Correct hash content (3)';
+    }
+}
+
+# The :cbor option for the client
+{
+    my $client = Cro::CBOR::WebSocket::Client.new: :cbor;
+    my $connection = await $client.connect: 'http://localhost:3005/cbor';
+    my $response = $connection.messages.head.Promise;
+    lives-ok { $connection.send({ kept => 'xxy', updated => 999 }) },
+        'Can send Hash using client constructed with :cbor';
+    given await $response {
+        my $body = await .body;
+        ok $body.isa(Hash), 'Got hash back from body, thanks to :cbor';
+        is $body<kept>, 'xxy', 'Correct hash content (1)';
+        is $body<added>, 42, 'Correct hash content (2)';
+        is $body<updated>, 1000, 'Correct hash content (3)';
+    }
+
+    dies-ok { $connection.send(-> {}) },
+            'If problem serializing to CBOR, it dies';
+}
+
+# WS / WSS handling
+{
+    my $conn = await Cro::WebSocket::Client.connect('ws://localhost:3005/cbor');
+    ok $conn, 'ws schema is handled';
+    $conn.close;
+    $conn = await Cro::WebSocket::Client.connect('wss://localhost:3007/cbor', :%ca);
+    ok $conn, 'wss schema is handled with %ca passed';
+    $conn.close;
+    dies-ok {
+        await Cro::WebSocket::Client.connect('wss://localhost:3007/cbor');
+    }, 'wss schema fails without %ca argument passed';
+}
+
+
+done-testing;
