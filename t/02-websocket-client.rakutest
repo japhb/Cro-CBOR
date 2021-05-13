@@ -41,7 +41,7 @@ END { $https-server.stop }
 
 # Body parsers/serializers
 {
-    my $client = Cro::WebSocket::Client.new:
+    my $client = Cro::CBOR::WebSocket::Client.new:
         body-parsers => Cro::CBOR::WebSocket::BodyParser,
         body-serializers => Cro::CBOR::WebSocket::BodySerializer;
     my $connection = await $client.connect: 'http://localhost:3005/cbor';
@@ -78,14 +78,14 @@ END { $https-server.stop }
 
 # WS / WSS handling
 {
-    my $conn = await Cro::WebSocket::Client.connect('ws://localhost:3005/cbor');
+    my $conn = await Cro::CBOR::WebSocket::Client.connect('ws://localhost:3005/cbor');
     ok $conn, 'ws schema is handled';
     $conn.close;
-    $conn = await Cro::WebSocket::Client.connect('wss://localhost:3007/cbor', :%ca);
+    $conn = await Cro::CBOR::WebSocket::Client.connect('wss://localhost:3007/cbor', :%ca);
     ok $conn, 'wss schema is handled with %ca passed';
     $conn.close;
     dies-ok {
-        await Cro::WebSocket::Client.connect('wss://localhost:3007/cbor');
+        await Cro::CBOR::WebSocket::Client.connect('wss://localhost:3007/cbor');
     }, 'wss schema fails without %ca argument passed';
 }
 
