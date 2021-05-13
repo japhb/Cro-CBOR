@@ -6,9 +6,9 @@
   "build-depends": [
   ],
   "depends": [
-    "CBOR::Simple",
-    "Cro::HTTP",
-    "Cro::WebSocket"
+    "CBOR::Simple:ver<0.0.8+>",
+    "Cro::HTTP:ver<0.8.5+>",
+    "Cro::WebSocket:ver<0.8.5+>"
   ],
   "description": "Support CBOR in Cro for body parsing/serializing",
   "license": "Artistic-2.0",
