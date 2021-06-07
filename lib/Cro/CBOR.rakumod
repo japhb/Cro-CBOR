@@ -1,4 +1,4 @@
-unit module Cro::CBOR:auth<zef:japhb>:api<0>:ver<0.0.2>;
+unit module Cro::CBOR:auth<zef:japhb>:api<0>:ver<0.0.3>;
 
 
 use Cro::BodyParser;
