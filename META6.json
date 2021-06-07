@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-    "CBOR::Simple:ver<0.0.8+>",
+    "CBOR::Simple:ver<0.0.9+>",
     "Cro::HTTP:ver<0.8.5+>",
     "Cro::WebSocket:ver<0.8.5+>"
   ],

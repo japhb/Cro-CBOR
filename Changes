@@ -1,5 +1,9 @@
 Revision history for Cro-CBOR
 
+0.0.3  *WIP*
+  - Bump CBOR::Simple dependency to 0.0.9+ to get higher performance
+
+
 0.0.2  2021-05-12
   - Test fixes
   - Expanded README
