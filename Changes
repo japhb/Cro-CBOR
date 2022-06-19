@@ -1,6 +1,8 @@
 Revision history for Cro-CBOR
 
 {{$NEXT}}
+
+0.0.5  2022-06-19T14:04:05-07:00
   - Turn off MacOS testing via GitHub Actions due to ... Apple being Apple
 
 
