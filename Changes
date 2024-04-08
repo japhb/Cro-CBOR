@@ -1,6 +1,9 @@
 Revision history for Cro-CBOR
 
 {{$NEXT}}
+  - Move the TLS tests to xt/, so that expiring test certificates don't block
+    normal zef installs
+
 
 0.0.5  2022-06-19T14:04:05-07:00
   - Turn off MacOS testing via GitHub Actions due to ... Apple being Apple
