@@ -1,0 +1,50 @@
+use Test;
+
+use CBOR::Simple;
+use Cro::HTTP::Router;
+use Cro::HTTP::Server;
+
+use Cro::CBOR;
+
+plan 2;
+
+
+### BELOW TESTS EXTRACTED FROM t/02-websocket-client.rakutest, ITSELF ADAPTED
+### NEARLY VERBATIM FROM THE JSON TESTS FOR CRO::WebSocket
+
+constant %ca := { ca-file => 'xt/certs-and-keys/ca-crt.pem' };
+constant %key-cert := {
+    private-key-file => 'xt/certs-and-keys/server-key.pem',
+    certificate-file => 'xt/certs-and-keys/server-crt.pem'
+};
+
+my $app = route {
+    get -> 'cbor' {
+        web-socket -> $incoming {
+            supply whenever $incoming {
+                my $cbor = cbor-decode await .body;
+                $cbor<added> = 42;
+                $cbor<updated>++;
+                emit cbor-encode $cbor;
+            }
+        }
+    }
+}
+
+my $https-server = Cro::HTTP::Server.new(port => 3007, application => $app, tls => %key-cert);
+$https-server.start;
+END { $https-server.stop }
+
+
+# WSS handling
+{
+    my $conn = await Cro::CBOR::WebSocket::Client.connect('wss://localhost:3007/cbor', :%ca);
+    ok $conn, 'wss schema is handled with %ca passed';
+    $conn.close;
+    dies-ok {
+        await Cro::CBOR::WebSocket::Client.connect('wss://localhost:3007/cbor');
+    }, 'wss schema fails without %ca argument passed';
+}
+
+
+done-testing;
