@@ -1,6 +1,8 @@
 Revision history for Cro-CBOR
 
 {{$NEXT}}
+
+0.0.6  2024-04-08T13:27:00-07:00
   - Move the TLS tests to xt/, so that expiring test certificates don't block
     normal zef installs
 
