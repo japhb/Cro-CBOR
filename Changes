@@ -1,6 +1,8 @@
 Revision history for Cro-CBOR
 
 {{$NEXT}}
+
+0.0.7  2025-05-28T22:50:30-07:00
   - Refresh TLS test certificates to get xt/ tests running
   - Fix test badge in README
 
